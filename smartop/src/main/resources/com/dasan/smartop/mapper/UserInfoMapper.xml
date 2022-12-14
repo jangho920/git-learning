@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.UserInfoMapper">
+    <select id="selectUserInfoList" parameterType="map" resultType="SmartopMap">
+        SELECT a.user_id
+             , a.user_nm
+             , a.user_sec_cd
+             , g.cmmn_dtl_nm AS user_sec_nm
+             , a.dealer_id
+             , d.dealer_nm
+             , a.brand_id
+             , e.brand_nm
+             , a.stor_id
+             , f.stor_nm
+             , a.area_nm
+             , a.use_yn
+             , a.reg_id
+             , b.user_nm AS reg_nm
+             , DATE_FORMAT(a.reg_dt, '%Y-%m-%d %d:%H:%i') AS reg_dt
+             , a.mod_id
+             , c.user_nm                                  AS mod_nm
+             , DATE_FORMAT(a.mod_dt, '%Y-%m-%d %d:%H:%i') AS mod_dt
+          FROM user_info a
+          LEFT OUTER JOIN user_info b
+            ON a.reg_id = b.user_id
+          LEFT OUTER JOIN user_info c
+            ON a.mod_id = c.user_id
+          LEFT OUTER JOIN dealer_info d
+            ON a.dealer_id = d.dealer_id
+          LEFT OUTER JOIN brand_info e
+            ON a.dealer_id = e.dealer_id
+              AND a.brand_id  = e.brand_id
+          LEFT OUTER JOIN stor_info f
+            ON a.dealer_id = f.dealer_id
+              AND a.brand_id  = f.brand_id
+              AND a.stor_id   = f.stor_id
+         INNER JOIN cmmn_dtl_cd g
+            ON a.user_sec_cd = g.cmmn_dtl_cd
+           AND g.cmmn_cd = 'user_sec_cd'
+         WHERE 1=1
+         <if test='userNm != null and userNm != ""'>
+           AND a.user_nm     LIKE #{userNm}||'%'
+         </if>
+         <if test='userSecCd != null and userSecCd != ""'>
+           AND a.user_sec_cd = #{userSecCd}
+         </if>
+         <if test='userSecCdList != null'>
+           AND a.user_sec_cd IN (
+                                  <foreach collection="userSecCdList" item="item" separator="," >
+                                  #{item}
+                                  </foreach>
+                                )
+         </if>
+         <if test='dealerId != null and dealerId != ""'>
+           AND a.dealer_id   = #{dealerId}
+         </if> 
+         <if test='dealerNm != null and dealerNm != ""'>
+           AND d.dealer_nm   LIKE CONCAT('%',#{dealerNm},'%')
+         </if> 
+         <if test='brandId != null and brandId != ""'>
+           AND a.brand_id    = #{brandId}
+         </if> 
+         <if test='brandNm != null and brandNm != ""'>
+           AND e.brand_nm    LIKE CONCAT('%',#{brandNm},'%')
+         </if>
+         <if test='storId != null and storId != ""'>
+           AND a.stor_id     = #{storId}
+         </if> 
+         <if test='storNm != null and storNm != ""'>
+           AND f.stor_nm     LIKE CONCAT('%',#{storNm},'%')
+         </if>
+         <if test='order != null and order != "" and order == "1"'>
+         ORDER BY a.reg_id ASC
+         </if>
+         <if test='order != null and order != "" and order == "2"'>
+         ORDER BY a.reg_id DESC
+         </if>
+         
+    </select>
+    
+    <select id="selectUserInfo" parameterType="map" resultType="SmartopMap">
+        SELECT a.user_id
+             , a.user_nm
+             , a.user_sec_cd
+             , a.dealer_id
+             , a.brand_id
+             , a.stor_id
+             , a.tel_num
+             , a.email
+             , a.area_nm
+             , a.emp_num
+             , a.use_yn
+          FROM user_info a
+         WHERE 1=1
+           AND a.user_id   = #{userId}
+    </select>
+    
+    <select id="selectUserInfoCnt" parameterType="map" resultType="int">
+        SELECT count(*) cnt
+          FROM user_info a
+         WHERE 1=1
+         <if test='userId != null and userId != ""'>
+           AND a.user_id   = #{userId}
+         </if>
+         <if test='dealerId != null and dealerId != ""'>
+           AND a.dealer_id  = #{dealerId}
+         </if>
+         <if test='brandId != null and brandId != ""'>
+           AND a.brand_id  = #{brandId}
+         </if> 
+         <if test='storId != null and storId != ""'>
+           AND a.stor_id   = #{storId}
+         </if>
+         <if test='empNum != null and empNum != ""'>
+           AND a.emp_num   = #{empNum}
+         </if>  
+         <if test='userSecCd != null and userSecCd != ""'>
+           AND a.user_sec_cd = #{userSecCd}
+         </if>
+           
+    </select>
+    
+    <insert id="insertUserInfo" >
+        INSERT 
+          INTO user_info
+               (
+                   user_id
+                 , user_nm
+                 , user_pass
+                 , tel_num
+                 , email
+                 , zip_cd
+                 , addr1
+                 , addr2
+                 , dealer_id
+                 , brand_id
+                 , stor_id
+                 , area_nm
+                 , user_sec_cd
+                 , emp_num
+                 , reg_id
+                 , reg_dt
+                 , mod_id
+                 , mod_dt
+               )
+         VALUE (
+                   #{userId}
+                 , #{userNm}
+                 , #{userPass}
+                 , #{telNum}
+                 , #{email}
+                 , #{zipCd}
+                 , #{addr1}
+                 , #{addr2}
+                 , #{dealerId}
+                 , #{brandId}
+                 , #{storId}
+                 , #{areaNm}
+                 , #{userSecCd}
+                 , #{empNum}
+                 , #{regId}
+                 , NOW()
+                 , #{modId}
+                 , NOW()
+               )
+    </insert>
+    
+    <update id="updateUserInfo" >
+        UPDATE user_info
+           SET user_nm  = #{userNm}
+             , tel_num  = #{telNum}
+             , email    = #{email}
+             , zip_cd   = #{zipCd}
+             , addr1    = #{addr1} 
+             , addr2    = #{addr2}
+             , area_nm  = #{areaNm} 
+             , mod_id   = #{modId}
+             , mod_dt   = NOW() 
+         WHERE user_id  = #{userId}
+    </update>
+    
+    <update id="updateUserPass" >
+        UPDATE user_info
+           SET user_pass = #{userPass}
+             , mod_id    = #{modId}
+             , mod_dt    = NOW() 
+         WHERE user_id   = #{userId}
+    </update>
+    
+    <delete id="deleteUserInfoList" >
+        DELETE 
+          FROM user_info
+         WHERE user_id IN (
+                            <foreach collection="list" item="item" separator="," >
+                            #{item}
+                            </foreach>
+                          )
+    </delete>
+    <update id="updateUserInfoList" >
+        UPDATE user_info
+           SET use_yn   = 'N'
+             , mod_id   = #{modId}
+             , mod_dt   = NOW() 
+         WHERE user_id IN (
+                            <foreach collection="list" item="item" separator="," >
+                            #{item}
+                            </foreach>
+                          )
+    </update>
+</mapper>

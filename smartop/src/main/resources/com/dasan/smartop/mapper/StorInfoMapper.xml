@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.StorInfoMapper">
+    <select id="selectStorList" parameterType="map" resultType="SmartopMap">
+        SELECT a.dealer_id
+             , b.dealer_nm
+             , a.brand_id
+             , c.brand_nm
+             , a.stor_id
+             , a.stor_nm
+             , a.rep_nm
+             , a.zip_cd
+             , a.addr1
+             , a.addr2
+             , a.aply_stat_cd
+             , e.cmmn_dtl_nm                              AS aply_stat_nm
+             , a.stor_stat_cd
+             , f.cmmn_dtl_nm                              AS stor_stat_nm
+             , a.sale_tax
+             , a.sale_tax_mark_yn
+             , a.pay_api_key
+             , IFNULL(g.appr_dev_cnt, 0)                  AS appr_dev_cnt
+             , DATE_FORMAT(a.reg_dt, '%Y-%m-%d %d:%H:%i') AS reg_dt
+             , d.user_nm                                  AS mod_nm
+             , DATE_FORMAT(a.mod_dt, '%Y-%m-%d %d:%H:%i') AS mod_dt 
+          FROM stor_info a
+         INNER JOIN dealer_info b
+            ON a.dealer_id = b.dealer_id
+         INNER JOIN brand_info c
+            ON a.dealer_id = c.dealer_id
+           AND a.brand_id  = c.brand_id
+          LEFT OUTER JOIN user_info d
+            ON a.mod_id    = d.user_id
+         INNER JOIN cmmn_dtl_cd e
+            ON a.aply_stat_cd = e.cmmn_dtl_cd
+           AND e.cmmn_cd      = 'aply_stat_cd'
+         INNER JOIN cmmn_dtl_cd f
+            ON a.stor_stat_cd = f.cmmn_dtl_cd
+           AND f.cmmn_cd      = 'stor_stat_cd'
+          LEFT OUTER JOIN (SELECT dealer_id
+                                , brand_id
+                                , stor_id
+                                , SUM(CASE WHEN dev_aply_stat_cd = '11' THEN 1 ELSE 0 END) AS aply_dev_cnt 
+                                , SUM(CASE WHEN dev_aply_stat_cd = '12' THEN 1 ELSE 0 END) AS hold_dev_cnt
+                                , SUM(CASE WHEN dev_aply_stat_cd = '13' THEN 1 ELSE 0 END) AS appr_dev_cnt
+                                , SUM(CASE WHEN dev_aply_stat_cd = '14' THEN 1 ELSE 0 END) AS refu_dev_cnt
+                                , SUM(CASE WHEN dev_aply_stat_cd = '21' THEN 1 ELSE 0 END) AS rtn_aply_dev_cnt
+                                , SUM(CASE WHEN dev_aply_stat_cd = '22' THEN 1 ELSE 0 END) AS rtn_hold_dev_cnt
+                                , SUM(CASE WHEN dev_aply_stat_cd = '23' THEN 1 ELSE 0 END) AS rtn_appr_dev_cnt
+                                , SUM(CASE WHEN dev_aply_stat_cd = '24' THEN 1 ELSE 0 END) AS rtn_refu_dev_cnt
+                             FROM dev_info g
+                            GROUP BY dealer_id
+                                   , brand_id
+                                   , stor_id
+                          ) g
+            ON a.dealer_id = g.dealer_id
+           AND a.brand_id  = g.brand_id
+           AND a.stor_id   = g.stor_id
+         WHERE 1=1 
+         <if test='dealerId != null and dealerId != ""'>
+           AND a.dealer_id = #{dealerId}
+         </if>
+         <if test='dealerNm != null and dealerNm != ""'>
+           AND b.dealer_nm LIKE CONCAT('%',#{dealerNm},'%')
+         </if>
+         <if test='brandId != null and brandId != ""'>
+           AND a.brand_id  = #{brandId}
+         </if>
+         <if test='brandNm != null and brandNm != ""'>
+           AND c.brand_nm  LIKE CONCAT('%',#{brandNm},'%')
+         </if>
+         <if test='storId != null and storId != ""'>
+           AND a.stor_id   = #{storId}
+         </if>
+         <if test='storNm != null and storNm != ""'>
+           AND a.stor_nm   LIKE CONCAT('%',#{storNm},'%')
+         </if>
+         ORDER BY a.dealer_id
+                , a.brand_id
+                , a.stor_id
+         <if test='order != null and order != "" and order == "1"'>
+                , a.reg_id ASC
+         </if>
+         <if test='order != null and order != "" and order == "2"'>
+                , a.reg_id DESC
+         </if>
+    </select>
+    
+    <select id="selectStorInfo" parameterType="map" resultType="SmartopMap">
+        SELECT stor_id
+             , dealer_id
+             , brand_id
+             , stor_nm
+             , rep_nm
+             , tel_num
+             , email
+             , zip_cd
+             , addr1
+             , addr2
+             , aply_stat_cd
+             , stor_stat_cd
+             , sale_tax
+             , sale_tax_mark_yn
+             , pay_api_key
+             , reg_id
+             , reg_dt
+             , mod_id
+             , mod_dt
+          FROM stor_info a
+         WHERE 1=1 
+         <if test='brandId != null and brandId != ""'>
+           AND stor_id  = #{storId}
+         </if>
+           AND dealer_id = #{dealerId}
+           AND brand_id  = #{brandId}
+         <if test='storNm != null and storNm != ""'>
+           AND stor_nm   LIKE CONCAT('%',#{storNm},'%')
+         </if>
+    </select>
+    
+    <insert id="insertStorInfo" >
+        <selectKey resultType="string" keyProperty="brandId" order="BEFORE">
+            SELECT NVL(LPAD(CAST(MAX(stor_id) AS INTEGER)+1, 10, '0'), '0000000001') AS stor_id
+              FROM stor_info
+             WHERE dealer_id = #{dealerId}
+               AND brand_id  = #{brand_id}
+        </selectKey>
+        INSERT 
+          INTO stor_info
+               (
+                   stor_id
+                 , dealer_id
+                 , brand_id
+                 , stor_nm
+                 , rep_nm
+                 , tel_num
+                 , email
+                 , zip_cd
+                 , addr1
+                 , addr2
+                 , aply_stat_cd
+                 , stor_stat_cd
+                 , sale_tax
+                 , sale_tax_mark_yn
+                 , pay_api_key
+                 , reg_id
+                 , reg_dt
+                 , mod_id
+                 , mod_dt
+               )
+         VALUE (   
+                   #{storId}
+                 , #{dealerId}
+                 , #{brandId}
+                 , #{storNm}
+                 , #{repNm}
+                 , #{telNum}
+                 , #{email}
+                 , #{zipCd}
+                 , #{addr1}
+                 , #{addr2}
+                 , #{aplyStatCd}
+                 , #{storStatCd}
+                 , #{saleTax}
+                 , #{saleTaxMarkYn}
+                 , #{payApiKey}
+                 , #{regId}
+                 , NOW()
+                 , #{modId}
+                 , NOW()
+               )
+    </insert>
+    
+    <update id="updateStorInfo" >
+        UPDATE stor_info
+           SET stor_nm = #{storNm}
+             , rep_nm   = #{repNm}
+             , tel_num  = #{telNum}
+             , email    = #{email}
+             , zip_cd   = #{zipCd} 
+             , addr1    = #{addr1} 
+             , addr2    = #{addr2} 
+             , mod_id   = #{modId}
+             , mod_dt   = NOW() 
+         WHERE brand_id  = #{brandId}
+           AND dealer_id = #{dealerId}
+    </update>
+    
+    <select id="selectStorUserCnt" parameterType="map" resultType="int">
+        SELECT count(*) cnt
+          FROM user_info a
+         WHERE 1=1
+           AND a.dealer_id = #{dealerId}
+           <if test='brandId != null and brandId != ""'>
+           AND a.brand_id  = #{brandId}
+           </if>
+           <if test='storId != null and storId != ""'>
+           AND a.stor_id  = #{storId}
+           </if>
+    </select>
+    
+    <delete id="deleteStorInfo" >
+       DELETE 
+         FROM stor_info
+        WHERE brand_id  = #{brandId}
+          AND dealer_id = #{dealerId}
+          AND stor_id = #{storId}
+    </delete>
+</mapper>

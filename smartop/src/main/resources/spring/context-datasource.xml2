@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+                           http://www.springframework.org/schema/beans/spring-beans-4.3.xsd 
+                           http://www.springframework.org/schema/util
+                           http://www.springframework.org/schema/util/spring-util-4.3.xsd 
+                           http://www.springframework.org/schema/jdbc
+                           http://www.springframework.org/schema/jdbc/spring-jdbc-4.3.xsd
+                           http://mybatis.org/schema/mybatis-spring 
+                           http://mybatis.org/schema/mybatis-spring.xsd ">
+		
+		<!-- <mybatis:scan base-package="com.dasan.smartop.mapper" /> -->
+		
+	<!-- <beans profile="local"> -->
+   
+	<!-- <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+			<property name="driverClassName" value="${Globals.db.driverClassName}"></property>
+			<property name="url"             value="${Globals.db.url}"></property>
+			<property name="username"        value="${Globals.db.username}"></property>
+			<property name="password"        value="${Globals.db.password}"></property>
+			<property name="initialSize"     value="1"></property>
+			<property name="maxTotal"        value="3"></property>
+		</bean>
+	</beans>
+	<beans profile="prod">
+		<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+			<property name="driverClassName" value="${Globals.db.driverClassName}"></property>
+			<property name="url"             value="${Globals.db.url}"></property>
+			<property name="username"        value="${Globals.db.username}"></property>
+			<property name="password"        value="${Globals.db.password}"></property>
+			<property name="initialSize"     value="1"></property>
+			<property name="maxTotal"        value="3"></property>
+		</bean>
+	</beans> -->
+</beans>

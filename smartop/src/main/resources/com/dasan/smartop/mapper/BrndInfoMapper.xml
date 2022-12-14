@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.BrndInfoMapper">
+    <select id="selectBrndList" parameterType="map" resultType="SmartopMap">
+        SELECT a.dealer_id
+             , b.dealer_nm
+             , a.brand_id
+             , a.brand_nm
+             , a.zip_cd
+             , a.addr1
+             , a.addr2
+             , DATE_FORMAT(a.reg_dt, '%Y-%m-%d %d:%H:%i') AS reg_dt
+             , c.user_nm                                  AS mod_nm
+             , DATE_FORMAT(a.mod_dt, '%Y-%m-%d %d:%H:%i') AS mod_dt 
+          FROM brand_info a
+         INNER JOIN dealer_info b
+            ON a.dealer_id = b.dealer_id
+          LEFT OUTER JOIN user_info c
+            ON a.mod_id = c.user_id
+         WHERE 1=1 
+         <if test='dealerId != null and dealerId != ""'>
+           AND a.dealer_id = #{dealerId}
+         </if>
+         <if test='dealerNm != null and dealerNm != ""'>
+           AND b.dealer_nm LIKE CONCAT('%',#{dealerNm},'%')
+         </if>
+         <if test='brandId != null and brandId != ""'>
+           AND a.brand_id  = #{brandId}
+         </if>
+         <if test='brandNm != null and brandNm != ""'>
+           AND a.brand_nm  LIKE CONCAT('%',#{brandNm},'%')
+         </if>
+         ORDER BY a.dealer_id
+                , a.brand_id
+         <if test='order != null and order != "" and order == "1"'>
+                , a.reg_id ASC
+         </if>
+         <if test='order != null and order != "" and order == "2"'>
+                , a.reg_id DESC
+         </if>
+    </select>
+    
+    <select id="selectBrndInfo" parameterType="map" resultType="SmartopMap">
+        SELECT brand_id
+             , dealer_id
+             , brand_nm
+             , rep_nm
+             , tel_num
+             , email
+             , zip_cd
+             , addr1
+             , addr2
+             , reg_id
+             , reg_dt
+             , mod_id
+             , mod_dt
+          FROM brand_info a
+         WHERE 1=1 
+         <if test='brandId != null and brandId != ""'>
+           AND brand_id  = #{brandId}
+         </if>
+           AND dealer_id = #{dealerId}
+         <if test='brandNm != null and brandNm != ""'>
+           AND brand_nm  LIKE CONCAT('%',#{brandNm},'%')
+         </if>
+    </select>
+    
+    <insert id="insertBrndInfo" >
+        <selectKey resultType="string" keyProperty="brandId" order="BEFORE">
+            SELECT NVL(LPAD(CAST(MAX(brand_id) AS INTEGER)+1, 10, '0'), '0000000001') AS brand_id
+              FROM brand_info
+             WHERE dealer_id = #{dealerId}
+        </selectKey>
+        INSERT 
+          INTO brand_info
+               (
+                   brand_id
+                 , dealer_id
+                 , brand_nm
+                 , rep_nm
+                 , tel_num
+                 , email
+                 , zip_cd
+                 , addr1
+                 , addr2
+                 , reg_id
+                 , reg_dt
+                 , mod_id
+                 , mod_dt
+               )
+         VALUE (
+                   #{brandId}
+                 , #{dealerId}
+                 , #{brandNm}
+                 , #{telNum}
+                 , #{email}
+                 , #{repNm}
+                 , #{zipCd}
+                 , #{addr1}
+                 , #{addr2}
+                 , #{regId}
+                 , NOW()
+                 , #{modId}
+                 , NOW()
+               )
+    </insert>
+    
+    <update id="updateBrndInfo" >
+        UPDATE brand_info
+           SET brand_nm = #{brandNm}
+             , rep_nm   = #{repNm}
+             , tel_num  = #{telNum}
+             , email    = #{email}
+             , zip_cd   = #{zipCd} 
+             , addr1    = #{addr1} 
+             , addr2    = #{addr2} 
+             , mod_id   = #{modId}
+             , mod_dt   = NOW() 
+         WHERE brand_id  = #{brandId}
+           AND dealer_id = #{dealerId}
+    </update>
+    
+    <select id="selectBrndUserCnt" parameterType="map" resultType="int">
+        SELECT count(*) cnt
+          FROM user_info a
+         WHERE 1=1
+           AND a.dealer_id = #{dealerId}
+           AND a.brand_id  = #{brandId}
+    </select>
+    
+    <delete id="deleteBrndInfo" >
+       DELETE 
+         FROM brand_info
+        WHERE brand_id  = #{brandId}
+          AND dealer_id = #{dealerId}
+    </delete>
+</mapper>

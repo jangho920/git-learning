@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.DevMmMapper">
+	<select id="selectDevList" resultType="SmartopMap">
+		SELECT a.brand_id
+ 		     , a.stor_id
+             , a.dev_id
+             , a.dev_sec_cd
+             , (SELECT cmmn_dtl_nm FROM cmmn_dtl_cd WHERE cmmn_cd = 'dev_sec_cd' AND cmmn_dtl_cd = a.dev_sec_cd) AS dev_sec_nm
+             , a.dev_reg_dt
+             , a.dev_reg_id
+             , a.dev_rem_dt
+             , a.use_yn
+             , a.reg_id
+             , a.reg_dt
+             , a.mod_id
+             , (SELECT user_nm FROM user_info WHERE user_id = a.mod_id)   AS mod_nm 
+             , a.mod_dt
+		  FROM dev_info a
+		 WHERE 1=1 
+		 <if test='brandId != null and brandId != ""'>
+		   AND a.brand_id = #{brandId}
+		 </if>
+		 <if test='storId != null and storId != ""'>
+		   AND a.stor_id = #{storId}
+		 </if>
+	</select>
+	
+	<insert id="insertDevInfo" >
+		INSERT 
+		  INTO dev_info
+		       (
+		           brand_id
+                 , stor_id
+                 , dev_id
+                 , dev_sec_cd      
+                 , reg_id
+                 , reg_dt
+                 , mod_id
+                 , mod_dt
+		       )
+		 VALUE (
+		           #{brandId}
+                 , #{storId}
+                 , #{devId}
+                 , #{devSecCd}
+                 , #{regId}
+                 , NOW()
+                 , #{modId}
+                 , NOW()
+		       )
+	</insert>
+	
+	<update id="updateDevInfo" >
+		UPDATE brand_info
+		   SET dev_sec_cd      = #{devSecCd}
+             , dev_rem_dt      = #{devRemDt}  
+         WHERE brand_id = #{brandId}
+           AND stor_id  = #{storId}
+           AND dev_id   = #{devId}
+	</update>
+</mapper>

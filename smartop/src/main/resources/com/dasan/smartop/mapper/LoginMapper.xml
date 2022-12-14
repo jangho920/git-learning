@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.LoginMapper">
+    <select id="selectUserInfo" parameterType="map" resultType="SmartopMap">
+        SELECT a.user_id
+             , a.user_nm
+             , a.tel_num
+             , a.email
+             , a.zip_cd
+             , a.addr1
+             , a.addr2
+             , a.dealer_id
+             , b.dealer_nm
+             , a.brand_id
+             , c.brand_nm
+             , a.stor_id
+             , d.stor_nm
+             , a.user_sec_cd
+             , e.cmmn_dtl_nm AS user_sec_nm
+             , a.reg_id
+             , a.reg_dt
+             , a.mod_id
+             , a.mod_dt
+          FROM user_info a
+          LEFT OUTER JOIN dealer_info b
+            ON a.dealer_id = b.dealer_id
+          LEFT OUTER JOIN brand_info c
+            ON a.dealer_id = c.dealer_id
+           AND a.brand_id  = c.brand_id
+          LEFT OUTER JOIN stor_info d
+            ON a.dealer_id = d.dealer_id
+           AND a.brand_id  = d.brand_id
+           AND a.stor_id   = d.stor_id
+         INNER JOIN cmmn_dtl_cd e
+            ON a.user_sec_cd = e.cmmn_dtl_cd
+           AND e.cmmn_cd = 'user_sec_cd'
+         WHERE 1=1
+         <if test='userId != null and userId != ""'>
+           AND a.user_id   = #{userId}
+         </if>
+         <if test='userNm != null and userNm != ""'>
+           AND a.user_nm   = #{userNm}
+         </if>
+         <if test='pass != null and pass != ""'>
+           AND a.user_pass = #{pass}
+         </if>
+    </select>
+</mapper>

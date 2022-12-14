@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.FileMapper">
+	<select id="selectFileList" parameterType="map" resultType="SmartopMap">
+		SELECT file_id
+		     , file_path
+		     , file_nm
+		     , org_file_nm
+		     , reg_id
+		     , reg_dt
+		     , mod_id
+		     , mod_dt
+		  FROM file_info
+		 WHERE file_id = #{fileId} 
+	</select>
+	
+	
+	<insert id="insertFileInfo" parameterType="map" >
+		<selectKey resultType="string" keyProperty="fileId" order="BEFORE">
+	        SELECT NVL(MAX(file_id), 0)+1 
+	          FROM file_info        
+	    </selectKey>
+		INSERT
+		  INTO file_info
+		       (
+		           file_id
+		         , file_path
+		         , file_nm
+		         , org_file_nm
+		         , reg_id
+		         , reg_dt
+		         , mod_id
+		         , mod_dt
+		       )
+		VALUES (
+		           #{fileId}
+		         , #{filePath}
+		         , #{fileNm}
+		         , #{orgFileNm}
+		         , #{regId}
+		         , NOW()
+		         , #{modId}
+		         , NOW()
+		       )
+	</insert>
+	
+	<delete id="deleteFileInfo" parameterType="map" >
+		DELETE
+		  FROM file_info
+		 WHERE file_id = #{fileId}
+	</delete>
+</mapper>

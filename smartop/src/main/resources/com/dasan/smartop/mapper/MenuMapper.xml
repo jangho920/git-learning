@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.MenuMapper">
+    <select id="selectMenuList" parameterType="map" resultType="SmartopMap">
+        WITH RECURSIVE cte AS (
+            SELECT a.menu_id
+                 , a.p_menu_id
+                 , a.menu_nm
+                 , a.scr_id
+                 , a.menu_lvl
+                 , a.menu_param
+                 , CAST(a.menu_id AS VARCHAR(100) CHARACTER SET UTF8) AS menu_path
+              FROM menu_info a
+             INNER JOIN auth_menu_info b
+                ON a.menu_id     = b.menu_id
+               AND b.user_sec_cd = #{userSecCd}
+               AND a.menu_lvl = '1'
+              UNION ALL
+             SELECT c.menu_id
+                  , c.p_menu_id
+                  , c.menu_nm
+                  , c.scr_id
+                  , c.menu_lvl
+                  , c.menu_param
+                  , CONCAT(e.menu_path, '->', c.menu_id ) AS menu_path
+               FROM menu_info c
+              INNER JOIN auth_menu_info d
+                 ON c.menu_id     = d.menu_id
+                AND d.user_sec_cd = #{userSecCd}
+              INNER JOIN cte e
+                 ON c.p_menu_id = e.menu_id
+          
+        )
+        SELECT f.menu_id
+             , IFNULL(f.p_menu_id, NULL) AS p_menu_id
+             , f.menu_nm
+             , f.menu_lvl
+             , f.menu_param
+             , f.menu_path
+             , f.scr_id
+             , g.scr_nm
+             , g.scr_path
+             , g.scr_file_nm
+          FROM cte f
+          LEFT OUTER JOIN scr_info g
+            ON f.scr_id = g.scr_id
+           AND g.usr_yn = 'Y'
+         ORDER BY f.menu_path
+    </select>
+</mapper>

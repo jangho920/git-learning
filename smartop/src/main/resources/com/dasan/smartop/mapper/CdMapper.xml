@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.CdMapper">
+    <select id="selectCdList" parameterType="map" resultType="SmartopMap">
+        SELECT cmmn_cd
+             , cmmn_dtl_cd
+             , cmmn_dtl_nm
+             , cust_div_cd1
+             , reg_id
+             , reg_dt
+             , mod_id
+             , mod_dt
+          FROM cmmn_dtl_cd
+         WHERE cmmn_cd = #{cmmnCd}
+         <if test='cmmnDtlCdList != null and cmmnDtlCdList != ""'> 
+           AND cmmn_dtl_cd IN (
+                                <foreach collection="cmmnDtlCdList" item="item" separator="," >
+                                #{item}
+                                </foreach>
+                              )
+          </if>
+          <if test='cmmnDtlCd != null and cmmnDtlCd != ""'>
+           AND cmmn_dtl_cd = #{cmmnDtlCd}
+          </if> 
+    </select>
+    
+    <select id="selectDealerList" parameterType="map" resultType="SmartopMap">
+        SELECT dealer_id AS cmmn_dtl_cd
+             , dealer_nm AS cmmn_dtl_nm
+          FROM dealer_info
+         WHERE 1=1
+           <if test='dealerId != null and dealerId != ""'>
+           AND dealer_id = #{dealerId}
+           </if> 
+    </select>
+    
+    <select id="selectBrandList" parameterType="map" resultType="SmartopMap">
+        SELECT brand_id AS cmmn_dtl_cd
+             , brand_nm AS cmmn_dtl_nm
+             , dealer_id
+          FROM brand_info
+         WHERE 1=1
+           <if test='brandId != null and brandId != ""'>
+           AND brand_id = #{brandId}
+           </if> 
+           <if test='dealerId != null and dealerId != ""'>
+           AND dealer_id = #{dealerId}
+           </if> 
+    </select>
+    
+    <select id="selectStorList" parameterType="map" resultType="SmartopMap">
+        SELECT stor_id AS cmmn_dtl_cd
+             , stor_nm AS cmmn_dtl_nm
+             , dealer_id
+             , brand_id
+          FROM stor_info
+         WHERE 1=1
+           <if test='storId != null and storId != ""'>
+           AND stor_id = #{storId}
+           </if> 
+           <if test='dealerId != null and dealerId != ""'>
+           AND dealer_id = #{dealerId}
+           </if> 
+           <if test='brandId != null and brandId != ""'>
+           AND brand_id = #{brandId}
+           </if> 
+    </select>
+</mapper>

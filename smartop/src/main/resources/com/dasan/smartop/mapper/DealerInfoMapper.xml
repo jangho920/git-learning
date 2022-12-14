@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dasan.smartop.mapper.DealerInfoMapper">
+    <select id="selectDealerList" parameterType="map" resultType="SmartopMap">
+        SELECT a.dealer_id
+             , a.dealer_nm
+             , a.zip_cd
+             , a.addr1
+             , a.addr2
+             , a.rep_nm
+             , DATE_FORMAT(a.reg_dt, '%Y-%m-%d %d:%H:%i') AS reg_dt
+             , c.user_nm                                  AS mod_nm
+             , DATE_FORMAT(a.mod_dt, '%Y-%m-%d %d:%H:%i') AS mod_dt 
+          FROM dealer_info a
+         INNER JOIN dealer_info b
+            ON a.dealer_id = b.dealer_id
+          LEFT OUTER JOIN user_info c
+            ON a.mod_id = c.user_id
+         WHERE 1=1 
+         <if test='dealerId != null and dealerId != ""'>
+           AND a.dealer_id  = #{dealerId}
+         </if>
+         <if test='dealerNm != null and dealerNm != ""'>
+           AND a.dealer_nm  LIKE CONCAT('%',#{dealerNm},'%')
+         </if>
+         ORDER BY a.dealer_id
+         <if test='order != null and order != "" and order == "1"'>
+                , a.reg_id ASC
+         </if>
+         <if test='order != null and order != "" and order == "2"'>
+                , a.reg_id DESC
+         </if>
+    </select>
+    
+    <select id="selectDealerInfo" parameterType="map" resultType="SmartopMap">
+        SELECT dealer_id
+             , dealer_nm
+             , tel_num
+             , email
+             , rep_nm
+             , zip_cd
+             , addr1
+             , addr2
+             , reg_id
+             , reg_dt
+             , mod_id
+             , mod_dt
+          FROM dealer_info a
+         WHERE 1=1 
+           AND dealer_id = #{dealerId}
+         <if test='dealerNm != null and dealerNm != ""'>
+           AND dealer_nm  LIKE CONCAT('%',#{dealerNm},'%')
+         </if>
+    </select>
+    
+    <insert id="insertDealerInfo" >
+        <selectKey resultType="string" keyProperty="dealerId" order="BEFORE">
+            SELECT NVL(LPAD(CAST(MAX(dealer_id) AS INTEGER)+1, 10, '0'), '0000000001') AS dealer_id
+              FROM dealer_info
+        </selectKey>
+        INSERT 
+          INTO dealer_info
+               (
+                   dealer_id
+                 , dealer_nm
+                 , tel_num
+                 , email
+                 , rep_nm
+                 , zip_cd
+                 , addr1
+                 , addr2
+                 , reg_id
+                 , reg_dt
+                 , mod_id
+                 , mod_dt
+               )
+         VALUE (
+                   #{dealerId}
+                 , #{dealerNm}
+                 , #{telNum}
+                 , #{email}
+                 , #{repNm}
+                 , #{zipCd}
+                 , #{addr1}
+                 , #{addr2}
+                 , #{regId}
+                 , NOW()
+                 , #{modId}
+                 , NOW()
+               )
+    </insert>
+    
+    <update id="updateDealerInfo" >
+        UPDATE dealer_info
+           SET dealer_nm = #{dealerNm}
+             , rep_nm   = #{repNm}
+             , tel_num  = #{telNum}
+             , email    = #{email}
+             , zip_cd   = #{zipCd} 
+             , addr1    = #{addr1} 
+             , addr2    = #{addr2} 
+             , mod_id   = #{modId}
+             , mod_dt   = NOW() 
+         WHERE dealer_id = #{dealerId}
+           AND dealer_id = #{dealerId}
+    </update>
+    
+    <select id="selectDealerUserCnt" parameterType="map" resultType="int">
+        SELECT count(*) cnt
+          FROM dealer_info a
+         WHERE 1=1
+           AND a.dealer_id = #{dealerId}
+    </select>
+    
+    <delete id="deleteDealerInfo" >
+       DELETE 
+         FROM dealer_info
+        WHERE dealer_id = #{dealerId}
+    </delete>
+</mapper>

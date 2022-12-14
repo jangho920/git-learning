@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd 
+                           http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd 
+                           http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <mvc:annotation-driven></mvc:annotation-driven>
+
+    <mvc:resources mapping="/resources/**" location="/resources/"></mvc:resources>
+
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/jsp/"></property>
+        <property name="suffix" value=".jsp"></property>
+    </bean>
+
+    <context:component-scan base-package="com.dasan.smartop">
+    	<context:include-filter type="annotation" expression="org.springframework.stereotype.Controller" />
+    </context:component-scan>
+    
+    <bean id="exceptionHandlerExceptionResolver" class="org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver" />
+	
+	<bean id="mappingJackson2HttpMessageConverter" class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter" />
+	
+	<bean id="beanNameResolver" class="org.springframework.web.servlet.view.BeanNameViewResolver" >
+		<property name="order" value="1" />
+	</bean>
+	
+	<bean class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+		<property name="order" value="2" />
+		<property name="contentNegotiationManager">
+			<bean id="cnManager" class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+				<property name="mediaTypes">
+					<map>
+					  <entry key="html" value="text/html"/>
+					  <entry key="json" value="application/json" />
+					  <entry key="jsonp" value="javascript/jsonp" />
+					  <entry key="multipart" value="multipart/form-data"/>
+					</map>
+				</property>
+			</bean>
+		</property>
+		<property name="viewResolvers">
+			<list>
+				<bean id="jspUrlBaseView" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+					<property name="order" value="3" />
+					<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />
+					<property name="prefix" value="/WEB-INF/jsp/"/>
+					<property name="suffix" value=".jsp"/>
+				</bean>
+			</list>
+		</property>
+		<property name="defaultViews">
+			<list>
+			    <bean id="jsonView" class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
+		           <!-- <property name="contentType" value="text/html;charset=UTF-8"/> -->
+		           <property name="contentType" value="application/json;charset=UTF-8" />
+		        </bean>
+			</list>
+		</property>
+	</bean>
+	<beans>
+		<bean class="com.dasan.smartop.cmmn.session.handler.SimpleUrlAnnotationHandlerMapping">
+			<property name="order" value="1" />
+	        <property name="interceptors">
+	            <list>
+	                <ref bean="authenticInterceptor" />
+	                <!-- <ref bean="webLogInterceptor"/> -->
+	            </list>
+	        </property>
+	        <property name="urls">
+				<set>
+					<value>/**/*.do</value>
+				</set>
+			</property>
+	    </bean>
+	 
+	    <bean id="authenticInterceptor" class="com.dasan.smartop.cmmn.session.interceptor.AuthenticInterceptor">
+	    	<property name="permittedURL">
+			<set>
+				<value>/loginView.do</value>
+			</set>
+			</property>
+	    </bean>
+    </beans>
+    <!-- <bean id="webLogInterceptor" class="com.test.common.WebLogInterceptor" /> -->
+    <beans>
+    	<bean id="multipartResolver" class="org.springframework.web.multipart.support.StandardServletMultipartResolver"> </bean>
+    </beans>
+    
+    
+</beans>
